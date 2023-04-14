@@ -8,5 +8,5 @@ source setenv.sh
 
 #### 2. Create 
 ```
-terraform apply -var-file configurations.tfvars 
+terraform apply -var-file configurations.tfvars -auto-approve
 ```

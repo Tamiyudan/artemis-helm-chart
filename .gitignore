@@ -31,3 +31,4 @@ override.tf.json
 backend.tf
 configurations.tfvars
 .terraform.lock.hcl
+*.terraform.lock.hcl
