@@ -1,10 +1,11 @@
 resource "google_monitoring_notification_channel" "email" {
-  display_name = "Send email to ${var.email}"
+  count        = "${length(var.email)}"
   project      = var.project_id
-  type         = "email"
   enabled      = true
+  display_name = "Send email to ${element(var.email, count.index)}"
+  type         = "email"
   labels = {
-    email_address = var.email
+    email_address = "${element(var.email, count.index)}"
   }
   force_delete = false
 }

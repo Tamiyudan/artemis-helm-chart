@@ -17,4 +17,8 @@ resource "google_monitoring_uptime_check_config" "https" {
       host       = "artemis-${var.environment}.${var.google_domain_name}"
     }
   }
+
+  content_matchers {
+    content = "\"status\":\"UP\""
+  }
 }
