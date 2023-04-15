@@ -1,3 +1,5 @@
+#!/bin/bash
+
 DIR=$(pwd)
 cat << EOF > "$DIR/backend.tf"
 terraform {
