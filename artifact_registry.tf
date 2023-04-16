@@ -1,7 +1,7 @@
 resource "kubernetes_secret" "artifact-registry" {
   metadata {
     name      = "artifact-registry"
-    namespace =  module.artemis-namespace.namespace
+    namespace = module.artemis-namespace.namespace
   }
 
   type = "kubernetes.io/dockerconfigjson"

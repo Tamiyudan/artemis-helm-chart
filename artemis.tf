@@ -1,14 +1,14 @@
-module  "artemis-namespace" {
-    source = "./modules/terraform-k8s-namespace"
-    name = "artemis-${var.environment}"
+module "artemis-namespace" {
+  source = "./modules/terraform-k8s-namespace"
+  name   = "artemis-${var.environment}"
 }
 
 module "artemis-terraform-helm" {
-    source = "./modules/terraform-helm"
-    deployment_name = "artemis-${var.environment}"
-    deployment_namespace = module.artemis-namespace.namespace
-    deployment_path = "charts/artemis"
-    values_yaml = <<EOF
+  source               = "./modules/terraform-helm"
+  deployment_name      = "artemis-${var.environment}"
+  deployment_namespace = module.artemis-namespace.namespace
+  deployment_path      = "charts/artemis"
+  values_yaml          = <<EOF
 
 replicaCount: 1
 

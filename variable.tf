@@ -1,6 +1,8 @@
 variable "project_id" {}
 
-variable google_domain_name {}
+variable "region" {}
+
+variable "google_domain_name" {}
 
 variable "environment" {}
 
@@ -10,10 +12,13 @@ variable "app_version" {}
 
 variable "app_port" {}
 
-variable "region" {}
-
 variable "registry_username" {
   default = "_json_key"
 }
 
-variable "email" {}
+variable "email" {
+  type    = list(string)
+  default = []
+  description = "List of email addresses."
+}
+
