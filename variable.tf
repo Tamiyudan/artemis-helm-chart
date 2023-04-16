@@ -6,6 +6,8 @@ variable "google_domain_name" {}
 
 variable "environment" {}
 
+variable "app_name" {}
+
 variable "repository" {}
 
 variable "app_version" {}

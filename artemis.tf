@@ -1,13 +1,13 @@
-module "artemis-namespace" {
+module "application-namespace" {
   source = "./modules/terraform-k8s-namespace"
-  name   = "artemis-${var.environment}"
+  name   = "${var.app_name}-${var.environment}"
 }
 
 module "artemis-terraform-helm" {
   source               = "./modules/terraform-helm"
-  deployment_name      = "artemis-${var.environment}"
-  deployment_namespace = module.artemis-namespace.namespace
-  deployment_path      = "charts/artemis"
+  deployment_name      = "a${var.app_name}-${var.environment}"
+  deployment_namespace = module.application-namespace.namespace
+  deployment_path      = "charts/application"
   values_yaml          = <<EOF
 
 replicaCount: 1
@@ -30,7 +30,7 @@ ingress:
     acme.cert-manager.io/http01-edit-in-place: "true"
     
   hosts:
-    - host: "artemis-${var.environment}.${var.google_domain_name}"
+    - host: "${var.app_name}-${var.environment}.${var.google_domain_name}"
       paths:
         - path: /
           pathType: Prefix
@@ -38,6 +38,6 @@ ingress:
   # tls: 
   #   - secretName: artemis-tls
   #     hosts:
-  #       - "artemis-${var.environment}.${var.google_domain_name}"
+  #       - "${var.app_name}-${var.environment}.${var.google_domain_name}"
 EOF
 }

@@ -4,7 +4,7 @@ module "uptime_check" {
   project_id         = var.project_id
   environment        = var.environment
   email              = var.email
-  display_name       = "Uptime Check https://artemis-${var.environment}.${var.google_domain_name} - Check Failed"
+  display_name       = "Uptime Check https://${var.app_name}-${var.environment}.${var.google_domain_name} - Check Failed"
 }
 
 
