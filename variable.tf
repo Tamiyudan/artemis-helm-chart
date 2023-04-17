@@ -19,8 +19,7 @@ variable "registry_username" {
 }
 
 variable "email" {
-  type    = list(string)
+  type    = list
   default = []
   description = "List of email addresses."
 }
-
