@@ -18,7 +18,7 @@ variable "registry_username" {
   default = "_json_key"
 }
 
-variable "email" {
+variable "email_list" {
     type = list
     default = []
 }
