@@ -3,5 +3,5 @@ output "uptime_check_id" {
 }
 
 output "emails" {
-  value = google_monitoring_notification_channel.email[*].name
+  value = google_monitoring_notification_channel.email.*.name
 }

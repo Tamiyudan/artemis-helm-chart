@@ -1,5 +1,5 @@
 resource "google_monitoring_uptime_check_config" "https" {
-  display_name = "https://artemis-${var.environment}.${var.google_domain_name}"
+  display_name = "https://${var.app_name}-${var.environment}.${var.google_domain_name}"
   timeout      = "60s"
   project      = var.project_id
 
@@ -14,7 +14,7 @@ resource "google_monitoring_uptime_check_config" "https" {
     type = "uptime_url"
     labels = {
       project_id = var.project_id
-      host       = "artemis-${var.environment}.${var.google_domain_name}"
+      host       = "${var.app_name}-${var.environment}.${var.google_domain_name}"
     }
   }
 
