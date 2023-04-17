@@ -8,7 +8,10 @@ variable "display_name" {}
 
 variable "app_name" {}
 
-variable "email" {
-    type = list
-    default = []
-}
+
+variable "email" {}
+
+# variable "email" {
+#     type = list
+#     default = []
+# }
