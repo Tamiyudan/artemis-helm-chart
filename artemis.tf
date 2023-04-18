@@ -36,7 +36,7 @@ ingress:
           pathType: Prefix
 
   # tls: 
-  #   - secretName: artemis-tls
+  #   - secretName: "${var.app_name}-secret"
   #     hosts:
   #       - "${var.app_name}-${var.environment}.${var.google_domain_name}"
 EOF
