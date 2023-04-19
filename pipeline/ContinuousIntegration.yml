@@ -2,14 +2,11 @@
 env:
   repo:            "https://github.com/sanyoc/project-artemis"
   app_version:     "1.0"
-  gcp_repo_name:    "artemis"     # Google Artifact repository name
+  gcp_repo_name:    "artemis"     # Google Artifact Registry name
   repo_region:     "us-central1"
-  project_id:      "${{ secrets.PROJECT_ID }}"
   app_name:        "artemis"
   tag_new_version: "${GITHUB_SHA}"
 
-
-# This is a basic workflow to help you get started with Actions
 name: ContinuousIntegration
 
 # Controls when the workflow will run
@@ -38,15 +35,28 @@ jobs:
       - name: Clone the repo
         run: |
           git clone "${{ env.repo }}"
+      
       # Creates an environment variable    
       - name: Set the value for work_dir variable
         run: echo "work_dir=$(echo ${{ env.repo }} | awk -F '/' '{ print $NF }')" >> $GITHUB_ENV
       
+      # Import Secret from Vault
+      - name: Import Secret from Vault
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_URL }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            artemis/data/gh_actions project_id ;
+            artemis/data/gh_actions service_account ;
+            artemis/data/gh_actions sonar_token
+            
+       
       # SonarCloud Code Analyzers
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
-          SONAR_TOKEN: "${{ secrets.SONAR_TOKEN}}" 
+          SONAR_TOKEN: "${{ env.SONAR_TOKEN}}" 
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
@@ -58,14 +68,14 @@ jobs:
       - name: Build and Tag the docker Image
         working-directory: "${{ env.work_dir }}"
         run: |
-          docker build -t ${{ env.repo_region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }} .
+          docker build -t ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }} .
 
       # Authenticate to Google Cloud
       - id: 'auth'
         name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v0.4.0
         with:
-          credentials_json: '${{ secrets.SERVICE_ACCOUNT }}'
+          credentials_json: '${{ env.SERVICE_ACCOUNT }}'
 
       # Configure Google Cloud Repository
       - name: Configure Google Cloud Repository
@@ -87,12 +97,12 @@ jobs:
       - name: Push the docker Image to GCP Repository
         working-directory: "${{ env.work_dir }}"
         run: |
-          docker push ${{ env.repo_region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }}
+          docker push ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }}
 
      
       # View vulnerabilities for the docker Image
       - name: View Vulnerabilities for the docker Image
         run: |
           gcloud artifacts docker images describe \
-          ${{ env.repo_region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.gcp_repo_name }}/${{ env.app_name }}:${{ env.tag_new_version }} \
-          --show-package-vulnerability
+          ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.gcp_repo_name }}/${{ env.app_name }}:${{ env.tag_new_version }} \
+          --show-package-vulnerability     
