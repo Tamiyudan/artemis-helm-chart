@@ -1,0 +1,108 @@
+# Declaring env's
+env:
+  repo:            "https://github.com/sanyoc/project-artemis"
+  app_version:     "1.0"
+  gcp_repo_name:    "artemis"     # Google Artifact Registry name
+  repo_region:     "us-central1"
+  app_name:        "artemis"
+  tag_new_version: "${GITHUB_SHA}"
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+#   push:
+#     branches: [ "main" ]
+
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  Image-Build/Push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3 
+      
+      # Clone the Repo
+      - name: Clone the repo
+        run: |
+          git clone "${{ env.repo }}"
+      
+      # Creates an environment variable    
+      - name: Set the value for work_dir variable
+        run: echo "work_dir=$(echo ${{ env.repo }} | awk -F '/' '{ print $NF }')" >> $GITHUB_ENV
+      
+      # Import Secret from Vault
+      - name: Import Secret from Vault
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_URL }}
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            artemis/data/gh_actions project_id ;
+            artemis/data/gh_actions service_account ;
+            artemis/data/gh_actions sonar_token
+            
+       
+      # SonarCloud Code Analyzers
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: "${{ env.SONAR_TOKEN}}" 
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          args: >
+            -Dsonar.organization=project-artemis
+            -Dsonar.projectKey=project-artemis
+            -Dsonar.sources=${{ env.work_dir }}/
+
+      # Build and Tag the docker Image
+      - name: Build and Tag the docker Image
+        working-directory: "${{ env.work_dir }}"
+        run: |
+          docker build -t ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }} -f ../Docker/ .
+
+      # Authenticate to Google Cloud
+      - id: 'auth'
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          credentials_json: '${{ env.SERVICE_ACCOUNT }}'
+
+      # Configure Google Cloud Repository
+      - name: Configure Google Cloud Repository
+        run: |
+          gcloud auth configure-docker  ${{ env.repo_region }}-docker.pkg.dev
+
+
+################## On-Demand Scanning API is $0.26 per scanned container image.######################
+#      # Scan Local the docker Image for any vulnerability before puhing to the GCP Repository      #
+#      - name: Scan Local the docker Image for any vulnerability                                    #
+#        run: |                                                                                     #
+#         # Add the local-extract component to your Google Cloud CLI installation                   #
+#           sudo apt install google-cloud-sdk-local-extract                                         #
+#           gcloud artifacts docker images scan ${{ env.app_name }}:${{ env.tag_new_version }}      #
+#####################################################################################################
+     
+     
+      # Push the docker Image to GCP Repository
+      - name: Push the docker Image to GCP Repository
+        working-directory: "${{ env.work_dir }}"
+        run: |
+          docker push ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.app_name }}/${{ env.app_name }}:${{ env.tag_new_version }}
+
+     
+      # View vulnerabilities for the docker Image
+      - name: View Vulnerabilities for the docker Image
+        run: |
+          gcloud artifacts docker images describe \
+          ${{ env.repo_region }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.gcp_repo_name }}/${{ env.app_name }}:${{ env.tag_new_version }} \
+          --show-package-vulnerability     
