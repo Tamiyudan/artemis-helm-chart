@@ -51,18 +51,17 @@ jobs:
             artemis/data/gh_actions service_account ;
             artemis/data/gh_actions sonar_token
             
-       
-#       # SonarCloud Code Analyzers
-#       - name: SonarCloud Scan
-#         uses: SonarSource/sonarqube-scan-action@master
-#         env:
-#           SONAR_TOKEN: "${{ env.SONAR_TOKEN}}" 
-#           SONAR_HOST_URL: https://sonarcloud.io
-#         with:
-#           args: >
-#             -Dsonar.organization=project-artemis
-#             -Dsonar.projectKey=project-artemis
-#             -Dsonar.sources=${{ env.work_dir }}/
+      # SonarCloud Code Analyzers
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: "${{ env.SONAR_TOKEN}}" 
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          args: >
+            -Dsonar.organization=project-artemis
+            -Dsonar.projectKey=project-artemis
+            -Dsonar.sources=${{ env.work_dir }}/
 
       # Build and Tag the docker Image
       - name: Build and Tag the docker Image
