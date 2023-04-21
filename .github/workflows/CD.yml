@@ -8,13 +8,13 @@ env:
   environment:        "prod"
 
 
-name: ContinuousDeployment
+name: CD
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow only when workflow "ContinuousDelivery" is completed successuful 
   workflow_run:
-    workflows: ["ContinuousIntegration"]
+    workflows: ["CI"]
     types:
       - completed
   
@@ -34,14 +34,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       
-      # Clone Helm Chart Repository
-      - name: Clone Helm Chart Repository
-        run: |
-          git clone "${{ env.helm_repository }}"
+#       # Clone Helm Chart Repository
+#       - name: Clone Helm Chart Repository
+#         run: |
+#           git clone "${{ env.helm_repository }}"
           
-      # Creates an environment variable    
-      - name: Set the value for work_dir variable
-        run: echo "work_dir=$(echo ${{ env.helm_repository }} | awk -F '/' '{ print $NF }')" >> $GITHUB_ENV
+#       # Creates an environment variable    
+#       - name: Set the value for work_dir variable
+#         run: echo "work_dir=$(echo ${{ env.helm_repository }} | awk -F '/' '{ print $NF }')" >> $GITHUB_ENV
       
       # Import Secret from Vault
       - name: Import Secret from Vault
@@ -73,13 +73,13 @@ jobs:
 
       # Configure Backend and Initialize
       - name: Configure Backend
-        working-directory: "${{ env.work_dir }}"
+        working-directory: "deployment"
         run: |
-          bash setenv.sh  
+          source ../backend_setup/setenv.sh  
       
       # Deploy the Application
       - name: Deploy the Application
-        working-directory: "${{ env.work_dir }}"
+        working-directory: "deployment"
         env:
           repository: "us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/artemis/artemis"
         run: |
