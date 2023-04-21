@@ -7,7 +7,7 @@ module "artemis-terraform-helm" {
   source               = "../modules/terraform-helm"
   deployment_name      = "a${var.app_name}-${var.environment}"
   deployment_namespace = module.application-namespace.namespace
-  deployment_path      = "charts/application"
+  deployment_path      = "../charts/application"
   values_yaml          = <<EOF
 
 replicaCount: 1
