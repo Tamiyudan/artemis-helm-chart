@@ -1,10 +1,10 @@
 module "application-namespace" {
-  source = "./modules/terraform-k8s-namespace"
+  source = "../modules/terraform-k8s-namespace"
   name   = "${var.app_name}-${var.environment}"
 }
 
 module "artemis-terraform-helm" {
-  source               = "./modules/terraform-helm"
+  source               = "../modules/terraform-helm"
   deployment_name      = "a${var.app_name}-${var.environment}"
   deployment_namespace = module.application-namespace.namespace
   deployment_path      = "charts/application"
